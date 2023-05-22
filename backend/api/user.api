@@ -1,0 +1,43 @@
+syntax = "v1"
+
+info (
+	title: // TODO: add title
+	desc: // TODO: add description
+	author: "Minh Thai"
+	email: "thosankieuhanh123@gmail.com"
+)
+
+type registationReq {
+	Name     string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+	Gender   string `json:"gender"`
+	Dob      string `json:"dob"`
+}
+
+type registationResp {
+	Message string `json:"message"`
+}
+
+type loginReq {
+	Name     string `json:"username"`
+	Password string `json:"password"`
+}
+
+type loginResp {
+	Message string `json:"message"`
+	Token   string `json:"authToken"`
+}
+
+@server(
+	middleware: Cors
+)
+
+service user-api {
+	@handler CreateUser
+	post /users/registation(registationReq) returns(registationResp)
+	
+	@handler UserLogin
+	post /users/login(loginReq) returns(loginResp)
+	
+}

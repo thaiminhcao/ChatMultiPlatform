@@ -1,0 +1,6 @@
+Name: user-api
+Host: 0.0.0.0
+Port: 8888
+DataSource: root:my-secret-pw@tcp(0.0.0.0:3307)/tour-booking?parseTime=true
+Auth:
+  AccessSecret: xxxxxxxxxxxxxx
