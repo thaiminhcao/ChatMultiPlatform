@@ -3,6 +3,7 @@ package sync
 import (
 	"encoding/binary"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -31,23 +32,24 @@ func (oSync *ObjSync) GenServiceObjID() int64 {
 	baseB := make([]byte, 8)
 	instanceB := make([]byte, 4)
 
-	var instanceMod = oSync.instanceId % 256 // max 256 instance
-
-	oSync.mu.Lock()
-	defer oSync.mu.Unlock()
+	var instanceMod = oSync.instanceId % 256 // max 256 instances
 
 	t := time.Now().UnixMilli()
-	if t <= oSync.prvTimestamp {
-		ret = oSync.prvTimestamp + 1
-	} else {
-		ret = t
+	prvTimestamp := atomic.LoadInt64(&oSync.prvTimestamp)
+	for {
+		if t <= prvTimestamp {
+			t = prvTimestamp + 1
+		}
+		if atomic.CompareAndSwapInt64(&oSync.prvTimestamp, prvTimestamp, t) {
+			break
+		}
+		prvTimestamp = atomic.LoadInt64(&oSync.prvTimestamp)
 	}
-	oSync.prvTimestamp = ret
 
-	binary.BigEndian.PutUint64(baseB, uint64(ret))
+	binary.BigEndian.PutUint64(baseB, uint64(t))
 	binary.BigEndian.PutUint32(instanceB, uint32(instanceMod))
 
-	// set first 6byte
+	// set first 6 bytes
 	binsID[1] = baseB[2]
 	binsID[2] = baseB[3]
 	binsID[3] = baseB[4]

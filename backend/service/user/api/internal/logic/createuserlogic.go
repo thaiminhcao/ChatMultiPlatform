@@ -27,14 +27,14 @@ func NewCreateUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 	}
 }
 
-func (l *CreateUserLogic) CreateUser(req *types.RegistationReq) (resp *types.RegistationResp, err error) {
+func (l *CreateUserLogic) CreateUser(req *types.RegistrationReq) (resp *types.RegistrationResp, err error) {
 	l.Logger.Infof("CreateUser", req)
-	var registation *model.Users
+	var registration *model.Users
 	currentTime := common.GetCurrentTime()
 
 	if req == nil {
 		l.Logger.Info(err)
-		return &types.RegistationResp{
+		return &types.RegistrationResp{
 			Message: common.INVALID_REQUEST,
 		}, nil
 	}
@@ -42,19 +42,21 @@ func (l *CreateUserLogic) CreateUser(req *types.RegistationReq) (resp *types.Reg
 	checkName, err := l.svcCtx.UserModel.FindByUserName(l.ctx, req.Name)
 	if err != nil {
 		l.Logger.Info(err)
-		return &types.RegistationResp{
+		return &types.RegistrationResp{
 			Message: common.ERROR_DB,
 		}, nil
 	}
 	if checkName != nil {
 		l.Logger.Info(err)
-		return &types.RegistationResp{
+		return &types.RegistrationResp{
 			Message: common.USER_EXIST,
 		}, nil
 	}
 	hashPw := utils.HashPassword(req.Password)
-	registation = &model.Users{
-		UserId:    l.svcCtx.ObjSync.GenServiceObjID(),
+
+	userId := l.svcCtx.ObjSync.GenServiceObjID()
+	registration = &model.Users{
+		UserId:    userId,
 		Username:  sql.NullString{String: req.Name, Valid: true},
 		Email:     sql.NullString{String: req.Email, Valid: true},
 		Password:  sql.NullString{String: hashPw, Valid: true},
@@ -62,14 +64,14 @@ func (l *CreateUserLogic) CreateUser(req *types.RegistationReq) (resp *types.Reg
 		Dob:       sql.NullInt64{Int64: req.Dob, Valid: true},
 		CreatedAt: sql.NullInt64{Int64: currentTime, Valid: true},
 	}
-	_, err = l.svcCtx.UserModel.Insertvalues(l.ctx, registation)
+	_, err = l.svcCtx.UserModel.Insertvalues(l.ctx, registration)
 	if err != nil {
 		l.Logger.Info(err)
-		return &types.RegistationResp{
+		return &types.RegistrationResp{
 			Message: common.ERROR_DB,
 		}, nil
 	}
-	return &types.RegistationResp{
+	return &types.RegistrationResp{
 		Message: common.SUCCESSFUL,
 	}, nil
 }

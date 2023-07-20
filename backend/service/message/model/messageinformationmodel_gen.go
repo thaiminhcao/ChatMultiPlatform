@@ -17,8 +17,8 @@ import (
 var (
 	messageInformationFieldNames          = builder.RawFieldNames(&MessageInformation{})
 	messageInformationRows                = strings.Join(messageInformationFieldNames, ",")
-	messageInformationRowsExpectAutoSet   = strings.Join(stringx.Remove(messageInformationFieldNames, "`message_id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
-	messageInformationRowsWithPlaceHolder = strings.Join(stringx.Remove(messageInformationFieldNames, "`message_id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
+	messageInformationRowsExpectAutoSet   = strings.Join(stringx.Remove(messageInformationFieldNames, "`message_id`", "`create_at`", "`created_at`", "`create_time`", "`update_at`", "`updated_at`", "`update_time`"), ",")
+	messageInformationRowsWithPlaceHolder = strings.Join(stringx.Remove(messageInformationFieldNames, "`message_id`", "`create_at`", "`created_at`", "`create_time`", "`update_at`", "`updated_at`", "`update_time`"), "=?,") + "=?"
 )
 
 type (
@@ -38,9 +38,8 @@ type (
 		MessageId int64          `db:"message_id"`
 		Title     sql.NullString `db:"title"`
 		UserId    sql.NullInt64  `db:"user_id"`
-		TourId    sql.NullInt64  `db:"tour_id"`
-		PaymentId sql.NullInt64  `db:"payment_id"`
-		CreatedAt sql.NullTime   `db:"created_at"`
+		Broker    sql.NullString `db:"broker"`
+		CreatedAt sql.NullInt64  `db:"created_at"`
 	}
 )
 
@@ -72,14 +71,14 @@ func (m *defaultMessageInformationModel) FindOne(ctx context.Context, messageId 
 }
 
 func (m *defaultMessageInformationModel) Insert(ctx context.Context, data *MessageInformation) (sql.Result, error) {
-	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, messageInformationRowsExpectAutoSet)
-	ret, err := m.conn.ExecCtx(ctx, query, data.Title, data.UserId, data.TourId, data.PaymentId)
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?)", m.table, messageInformationRowsExpectAutoSet)
+	ret, err := m.conn.ExecCtx(ctx, query, data.Title, data.UserId, data.Broker)
 	return ret, err
 }
 
 func (m *defaultMessageInformationModel) Update(ctx context.Context, data *MessageInformation) error {
 	query := fmt.Sprintf("update %s set %s where `message_id` = ?", m.table, messageInformationRowsWithPlaceHolder)
-	_, err := m.conn.ExecCtx(ctx, query, data.Title, data.UserId, data.TourId, data.PaymentId, data.MessageId)
+	_, err := m.conn.ExecCtx(ctx, query, data.Title, data.UserId, data.Broker, data.MessageId)
 	return err
 }
 

@@ -7,7 +7,7 @@ info (
 	email: "thosankieuhanh123@gmail.com"
 )
 
-type registationReq {
+type registrationReq {
 	Name     string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
@@ -15,7 +15,7 @@ type registationReq {
 	Dob      int64  `json:"dob"`
 }
 
-type registationResp {
+type registrationResp {
 	Message string `json:"message"`
 }
 
@@ -31,7 +31,7 @@ type loginResp {
 
 service user-api {
 	@handler CreateUser
-	post /users/registation(registationReq) returns(registationResp)
+	post /users/registration(registrationReq) returns(registrationResp)
 	
 	@handler UserLogin
 	post /users/login(loginReq) returns(loginResp)
