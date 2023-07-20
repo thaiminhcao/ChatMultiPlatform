@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	"tourBooking/common"
 	"tourBooking/service/user/api/internal/svc"
@@ -11,7 +10,6 @@ import (
 	"tourBooking/service/user/api/internal/utils"
 	"tourBooking/service/user/model"
 
-	"github.com/guregu/null"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -32,7 +30,7 @@ func NewCreateUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 func (l *CreateUserLogic) CreateUser(req *types.RegistationReq) (resp *types.RegistationResp, err error) {
 	l.Logger.Infof("CreateUser", req)
 	var registation *model.Users
-	var dob null.Time
+	currentTime := common.GetCurrentTime()
 
 	if req == nil {
 		l.Logger.Info(err)
@@ -40,23 +38,31 @@ func (l *CreateUserLogic) CreateUser(req *types.RegistationReq) (resp *types.Reg
 			Message: common.INVALID_REQUEST,
 		}, nil
 	}
-	t, err := time.Parse("2-1-2006", req.Dob)
+	//check exist name
+	checkName, err := l.svcCtx.UserModel.FindByUserName(l.ctx, req.Name)
 	if err != nil {
-		l.Logger.Info("Invalid type for field dob")
+		l.Logger.Info(err)
 		return &types.RegistationResp{
-			Message: common.INVALID_REQUEST,
+			Message: common.ERROR_DB,
 		}, nil
 	}
-	dob = null.TimeFrom(t)
+	if checkName != nil {
+		l.Logger.Info(err)
+		return &types.RegistationResp{
+			Message: common.USER_EXIST,
+		}, nil
+	}
 	hashPw := utils.HashPassword(req.Password)
 	registation = &model.Users{
-		Username: sql.NullString{String: req.Name, Valid: true},
-		Email:    sql.NullString{String: req.Email, Valid: true},
-		Password: sql.NullString{String: hashPw, Valid: true},
-		Gender:   sql.NullString{String: req.Gender, Valid: true},
-		Dob:      dob.NullTime,
+		UserId:    l.svcCtx.ObjSync.GenServiceObjID(),
+		Username:  sql.NullString{String: req.Name, Valid: true},
+		Email:     sql.NullString{String: req.Email, Valid: true},
+		Password:  sql.NullString{String: hashPw, Valid: true},
+		Gender:    sql.NullString{String: req.Gender, Valid: true},
+		Dob:       sql.NullInt64{Int64: req.Dob, Valid: true},
+		CreatedAt: sql.NullInt64{Int64: currentTime, Valid: true},
 	}
-	_, err = l.svcCtx.UserModel.Insert(l.ctx, registation)
+	_, err = l.svcCtx.UserModel.Insertvalues(l.ctx, registation)
 	if err != nil {
 		l.Logger.Info(err)
 		return &types.RegistationResp{

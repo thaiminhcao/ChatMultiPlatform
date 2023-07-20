@@ -3,7 +3,7 @@ pipeline    {
         stages  {
             stage('Clone') {
                 steps   {
-                    git 'https://github.com/thaiminhcao/Tour-Booking.git'
+                    git 'https://github.com/thaiminhcao/ChatMultiPlatform.git'
                 }
             }
         }

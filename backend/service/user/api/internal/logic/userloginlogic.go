@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"tourBooking/common"
@@ -44,7 +43,11 @@ func (l *UserLoginLogic) UserLogin(req *types.LoginReq) (resp *types.LoginResp, 
 			Message: common.ERROR_DB,
 		}, nil
 	}
-
+	if Result == nil {
+		return &types.LoginResp{
+			Message: common.USER_DOES_NOT_EXIST,
+		}, nil
+	}
 	token, err := utils.GenToken(req.Name+time.Now().String(), l.svcCtx.Config.Auth.AccessSecret)
 	if err != nil {
 		l.Logger.Info(err)
@@ -53,7 +56,7 @@ func (l *UserLoginLogic) UserLogin(req *types.LoginReq) (resp *types.LoginResp, 
 		}, nil
 	}
 
-	pw := sql.NullString(Result.Password)
+	pw := Result.Password
 	bool, msg := utils.VerifyPassword(pw.String, req.Password)
 	if !bool {
 		l.Logger.Info("invalid pass")

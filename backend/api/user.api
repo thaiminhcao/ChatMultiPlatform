@@ -12,7 +12,7 @@ type registationReq {
 	Password string `json:"password"`
 	Email    string `json:"email"`
 	Gender   string `json:"gender"`
-	Dob      string `json:"dob"`
+	Dob      int64  `json:"dob"`
 }
 
 type registationResp {
@@ -28,10 +28,6 @@ type loginResp {
 	Message string `json:"message"`
 	Token   string `json:"authToken"`
 }
-
-@server(
-	middleware: Cors
-)
 
 service user-api {
 	@handler CreateUser

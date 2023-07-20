@@ -10,3 +10,6 @@ build:
 	sudo docker build -t app .
 run:
 	sudo docker run -d --name my-app app
+
+psql:
+	sudo docker exec -it chatapp psql -U root

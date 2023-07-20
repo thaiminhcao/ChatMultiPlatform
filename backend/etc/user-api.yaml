@@ -1,6 +1,7 @@
 Name: user-api
 Host: 0.0.0.0
 Port: 8888
-DataSource: root:my-secret-pw@tcp(0.0.0.0:3307)/tour-booking?parseTime=true
+InstanceId: 1
+DataSource: sql6633512:MPdcLJKEmX@tcp(sql6.freesqldatabase.com:3306)/sql6633512
 Auth:
   AccessSecret: xxxxxxxxxxxxxx

@@ -6,7 +6,7 @@ type RegistationReq struct {
 	Password string `json:"password"`
 	Email    string `json:"email"`
 	Gender   string `json:"gender"`
-	Dob      string `json:"dob"`
+	Dob      int64  `json:"dob"`
 }
 
 type RegistationResp struct {

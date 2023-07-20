@@ -1,6 +1,9 @@
 ROOT_DIR=$(shell pwd)
 API_DIR=$(ROOT_DIR)/api
-SCHEMA_DIR=$(ROOT_DIR)/schema
+SCHEMA_DIR=$(ROOT_DIR)/db/schema
+MIGRATIONS_DIR=$(ROOT_DIR)/db/migrations
+SRC_STRING="mysql://sql6633512:MPdcLJKEmX@tcp(sql6.freesqldatabase.com:3306)/sql6633512"
+
 SERVICE=service
 SERVICE_DIR=$(ROOT_DIR)/$(SERVICE)
 
@@ -9,16 +12,6 @@ SERVICE_DIR=$(ROOT_DIR)/$(SERVICE)
 USER_DIR=$(SERVICE_DIR)/user
 USER_API_DIR=$(USER_DIR)/api
 USER_MODEL_DIR=$(USER_DIR)/model
-
-# payment service
-PAYMENT_DIR=$(SERVICE_DIR)/payment
-PAYMENT_API_DIR=$(PAYMENT_DIR)/api
-PAYMENT_MODEL_DIR=$(PAYMENT_DIR)/model
-
-# tour service
-TOUR_DIR=$(SERVICE_DIR)/tour
-TOUR_API_DIR=$(TOUR_DIR)/api
-TOUR_MODEL_DIR=$(TOUR_DIR)/model
 
 # message service
 MESSAGE_DIR=$(SERVICE_DIR)/message
@@ -29,28 +22,33 @@ MESSGE_MODEL_DIR=$(MESSAGE_DIR)/model
 gen-user-service:
 	goctl api go -api $(API_DIR)/user.api -dir $(USER_API_DIR)
 
-gen-payment-service:
-	goctl api go -api $(API_DIR)/payment.api -dir $(PAYMENT_API_DIR)
-
-gen-tour-service:
-	goctl api go -api $(API_DIR)/tour.api -dir $(TOUR_API_DIR)
-
 gen-message-service:
 	goctl api go -api $(API_DIR)/message.api -dir $(MESSAGE_API_DIR)
 
 # gen models
 
 gen-user-model:
-	goctl model mysql ddl -src="$(SCHEMA_DIR)/user.sql" -dir="$(USER_MODEL_DIR)"
-
-gen-tour-model:
-	goctl model mysql ddl -src="$(SCHEMA_DIR)/tour.sql" -dir="$(TOUR_MODEL_DIR)"
-
-gen-payment-model:
-	goctl model mysql ddl -src="$(SCHEMA_DIR)/payment.sql" -dir="$(PAYMENT_MODEL_DIR)"
+	goctl model mysql ddl -src="$(SCHEMA_DIR)/users.sql" -dir="$(USER_MODEL_DIR)"
+# goctl model pg datasource --url=$(SRC_STRING) --dir="$(USER_MODEL_DIR)"  --table=users
 
 gen-message-model:
-	goctl model mysql ddl -src="$(SCHEMA_DIR)/message.sql" -dir="$(MESSGE_MODEL_DIR)"
+	goctl model mysql ddl -src="$(SCHEMA_DIR)/message_information.sql" -dir="$(MESSGE_MODEL_DIR)"
+# goctl model pg datasource -url=$(SRC_STRING) --dir="$(MESSGE_MODEL_DIR)" --table=message_information
 
 runs:
 	go run ./main.go -f ROOT_DIR/etc/server.yaml
+
+logs-container:
+	sudo docker logs chatapp
+
+migrate-common_schemadb:
+	migrate create -ext sql -dir $(MIGRATIONS_DIR) -seq common_schema
+
+migrate-up:
+	migrate -path $(MIGRATIONS_DIR) -database $(SRC_STRING) -verbose up 1
+
+migrate-down:
+	migrate -path $(MIGRATIONS_DIR) -database $(SRC_STRING) -verbose down 1
+
+drop-table:
+	migrate -path $(MIGRATIONS_DIR) -database $(SRC_STRING) -verbose force 1

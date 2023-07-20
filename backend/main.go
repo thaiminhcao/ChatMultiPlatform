@@ -16,7 +16,7 @@ var configFile = flag.String("server_config", "etc/server.yaml", "the config fil
 func main() {
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	server := rest.MustNewServer(c.RestConf)
+	server := rest.MustNewServer(c.RestConf, rest.WithCors("*"))
 	defer server.Stop()
 
 	//user service

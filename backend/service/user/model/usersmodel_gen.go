@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/builder"
 	"github.com/zeromicro/go-zero/core/stores/sqlc"
@@ -18,8 +17,8 @@ import (
 var (
 	usersFieldNames          = builder.RawFieldNames(&Users{})
 	usersRows                = strings.Join(usersFieldNames, ",")
-	usersRowsExpectAutoSet   = strings.Join(stringx.Remove(usersFieldNames, "`user_id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
-	usersRowsWithPlaceHolder = strings.Join(stringx.Remove(usersFieldNames, "`user_id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
+	usersRowsExpectAutoSet   = strings.Join(stringx.Remove(usersFieldNames, "`created_at`", "`create_time`", "`update_at`", "`updated_at`", "`update_time`", "`create_at`"), ",")
+	usersRowsWithPlaceHolder = strings.Join(stringx.Remove(usersFieldNames, "`user_id`", "`created_at`", "`create_time`", "`update_at`", "`updated_at`", "`update_time`", "`create_at`"), "=?,") + "=?"
 )
 
 type (
@@ -40,9 +39,9 @@ type (
 		Username  sql.NullString `db:"username"`
 		Email     sql.NullString `db:"email"`
 		Password  sql.NullString `db:"password"`
-		CreatedAt time.Time      `db:"created_at"`
 		Gender    sql.NullString `db:"gender"`
-		Dob       sql.NullTime   `db:"dob"`
+		Dob       sql.NullInt64  `db:"dob"`
+		CreatedAt sql.NullInt64  `db:"created_at"`
 	}
 )
 
@@ -74,8 +73,8 @@ func (m *defaultUsersModel) FindOne(ctx context.Context, userId int64) (*Users, 
 }
 
 func (m *defaultUsersModel) Insert(ctx context.Context, data *Users) (sql.Result, error) {
-	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?)", m.table, usersRowsExpectAutoSet)
-	ret, err := m.conn.ExecCtx(ctx, query, data.Username, data.Email, data.Password, data.Gender, data.Dob)
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, usersRowsExpectAutoSet)
+	ret, err := m.conn.ExecCtx(ctx, query, data.UserId, data.Username, data.Email, data.Password, data.Gender, data.Dob)
 	return ret, err
 }
 
